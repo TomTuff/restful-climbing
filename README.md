@@ -51,3 +51,4 @@ Some brief notes about how I'll try to adhere to twelve-factor app design
     - [Logging with AWS Fargate and `awslogs`](https://docs.aws.amazon.com/prescriptive-guidance/latest/implementing-logging-monitoring-cloudwatch/ec2-fargate-logs.html)
     - [`env_logger`](https://docs.rs/env_logger/0.10.0/env_logger/) - configure to write to `stdout`
 12. Admin processes: I don't think I need to worry about this for this project, unless/until I want to migrate databases. Maybe I should try that just for practice.
+    - **Ok, this came up way earlier than I thought.** I should make the database schema using a database migration tool, and use git for version control of the database schema files. I'll try Liquibase. And I should use a common [`dotenv`](https://docs.rs/dotenv/0.15.0/dotenv/) for my database connection parameters, for both the migration tool, and my application code. 
