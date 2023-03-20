@@ -22,13 +22,15 @@ Toy REST API for getting information about different climbs and recording climbs
     - DELETE: Delete the review of the given climber/route
 
 ## Notes
-- General plan:
-    - [Make Amazon RDS PostgreSQL instance](https://aws.amazon.com/rds/postgresql/pricing/)
-    - Write the API with:
-        - [actix-web](https://actix.rs/docs/getting-started)
-        - [sqlx](https://crates.io/crates/sqlx) with `runtime-tokio-rustls` feature flag
-    - Containerize the application using docker
-    - Deploy the application on AWS Fargate
+### General plan:
+- [Make Amazon RDS PostgreSQL instance](https://aws.amazon.com/rds/postgresql/pricing/)
+- Write the API with:
+    - [actix-web](https://actix.rs/docs/getting-started)
+    - [sqlx](https://crates.io/crates/sqlx) with `runtime-tokio-rustls` feature flag
+- Containerize the application using docker
+- Deploy the application on AWS Fargate
+
+### Links to articles, tutorials, etc
 - [Containerizing Rust](https://www.fpcomplete.com/blog/2018/07/deploying-rust-with-docker-and-kubernetes/) - everything up to, but not including, the section "Deploying our Docker image with Kubernetes"
 - [Deploying Docker container to AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html)
 
