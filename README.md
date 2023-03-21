@@ -39,6 +39,7 @@ Some brief notes about how I'll try to adhere to twelve-factor app design
 1. Codebase: Github
 2. Dependencies: Cargo
 3. Config: Use dotenv if I find I need some configuration is needed, but would rather avoid it
+    - Avoid `$` in values stored in `.env`; had to escape with a `\`
 4. Backing services: The postgres database we'll host through AWS is an attached resource. Code should be written in a way that it could be moved to another database (i.e. self-hosted server or [Google cloud](https://cloud.google.com/sql/docs/postgres/quickstarts))
 5. Build release run: The tutorial for containerizing rust uses a build stage and run stage in the dockerfile. Not sure if this is separated enough for twelve-factor app standards.
 6. Processes: The API will be stateless. State will be stored in the postgres databse.
@@ -52,4 +53,6 @@ Some brief notes about how I'll try to adhere to twelve-factor app design
     - [`env_logger`](https://docs.rs/env_logger/0.10.0/env_logger/) - configure to write to `stdout`
 12. Admin processes: I don't think I need to worry about this for this project, unless/until I want to migrate databases. Maybe I should try that just for practice.
     - **Ok, this came up way earlier than I thought.** I should make the database schema using a database migration tool, and use git for version control of the database schema files. I'll try Liquibase. And I should use a common [`dotenv`](https://docs.rs/dotenv/0.15.0/dotenv/) for my database connection parameters, for both the migration tool, and my application code. 
+        - `dotenv` is abandoned, using `dotenvy` instead.
+        - using `dotenvy_macro` for compile time checking, neat
     - Liquibase doesn't work with a `.env` file so I have my `liquibase.properties` and `.env` files keeping track of some duplicate info. 

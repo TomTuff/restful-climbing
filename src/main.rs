@@ -1,5 +1,6 @@
-use actix_web::{HttpServer, App, Responder, HttpResponse, post};
+use actix_web::{post, App, HttpResponse, HttpServer, Responder};
 
+pub mod pg;
 pub mod route;
 mod routes;
 
@@ -12,27 +13,23 @@ macro_rules! app (
     });
 );
 
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let x = actix_web::App::new();
-    HttpServer::new(|| {
-        app!()
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    HttpServer::new(|| app!())
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use route::Route;
     use actix_web::{
         http::{self},
         test,
     };
+    use route::Route;
 
     fn test_route() -> Route {
         Route::new("funky monkey".to_string(), 5, (123.45, 52.310))
@@ -41,7 +38,10 @@ mod tests {
     #[actix_web::test]
     async fn test_adding_route() {
         let app = test::init_service(app!()).await;
-        let req = test::TestRequest::post().uri("/routes").set_json(test_route()).to_request();
+        let req = test::TestRequest::post()
+            .uri("/routes")
+            .set_json(test_route())
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK)
     }

@@ -7,9 +7,9 @@ pub struct DifficultyRating(u8);
 impl Into<DifficultyRating> for usize {
     fn into(self) -> DifficultyRating {
         let rating = match self {
-            0 => { 1 }
-            1 ..= 10 => { self as u8 }
-            _ => { 10 }
+            0 => 1,
+            1..=10 => self as u8,
+            _ => 10,
         };
         DifficultyRating(rating)
     }
@@ -66,5 +66,5 @@ mod tests {
                 location: GpsPosition(123.45, 52.310),
             }
         )
-    }    
+    }
 }
