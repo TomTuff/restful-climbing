@@ -1,3 +1,4 @@
+/// module for structs related to Route, mostly handled by the API endpoint /routes
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

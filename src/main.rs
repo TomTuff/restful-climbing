@@ -1,20 +1,14 @@
 use actix_web::{HttpServer, App, Responder, HttpResponse, post};
 
-mod route;
-
-use route::{Route};
-
-#[post("/routes")]
-async fn post_route() -> impl Responder {
-    // TODO: add SQL
-    HttpResponse::Ok()
-}
+pub mod route;
+mod routes;
 
 // macro for generating the app so that we don't have redundant code in tests module and main()
 #[macro_export]
 macro_rules! app (
     () => ({
         App::new()
+            .service(routes::routes_post)
     });
 );
 
@@ -34,6 +28,7 @@ async fn main() -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use route::Route;
     use actix_web::{
         http::{self},
         test,
@@ -49,5 +44,13 @@ mod tests {
         let req = test::TestRequest::post().uri("/routes").set_json(test_route()).to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK)
+    }
+
+    #[actix_web::test]
+    async fn test_adding_route_fails() {
+        let app = test::init_service(app!()).await;
+        let req = test::TestRequest::post().uri("/routes").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST)
     }
 }
