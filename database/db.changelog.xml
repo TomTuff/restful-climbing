@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="create-tables" author="Tom">
+        <createTable tableName="routes">
+            <column name="id" type="serial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)" />
+            <column name="difficulty" type="varchar(10)" />
+            <column name="location" type="point" />
+            <column name="times_climbed" type="integer" defaultValue="0" />
+        </createTable>
+
+        <createTable tableName="climbers">
+            <column name="id" type="serial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="varchar(255)" />
+        </createTable>
+
+        <createTable tableName="climbs">
+            <column name="id" type="serial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="climber_id" type="integer" />
+            <column name="route_id" type="integer" />
+            <column name="completion_date" type="timestamp" />
+            <column name="rating" type="integer" />
+            <column name="review" type="varchar(1000)" />
+        </createTable>
+        
+        <addForeignKeyConstraint
+            baseTableName="climbs"
+            baseColumnNames="climber_id"
+            referencedTableName="climbers"
+            referencedColumnNames="id"
+            constraintName="fk_climbs_climber"
+            onDelete="CASCADE"
+            onUpdate="CASCADE"
+        />
+        
+        <addForeignKeyConstraint
+            baseTableName="climbs"
+            baseColumnNames="route_id"
+            referencedTableName="routes"
+            referencedColumnNames="id"
+            constraintName="fk_climbs_route"
+            onDelete="CASCADE"
+            onUpdate="CASCADE"
+        />
+    </changeSet>
+
+</databaseChangeLog>
