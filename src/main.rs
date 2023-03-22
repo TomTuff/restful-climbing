@@ -15,7 +15,6 @@ macro_rules! app (
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let x = actix_web::App::new();
     HttpServer::new(|| app!())
         .bind(("127.0.0.1", 8080))?
         .run()
