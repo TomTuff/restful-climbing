@@ -1,17 +1,28 @@
+use std::fmt::Display;
+
 /// module for structs related to Route, mostly handled by the API endpoint /routes
 use serde::{Deserialize, Serialize};
+use sqlx::{Postgres, Type};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct DifficultyRating(u8);
+pub enum DifficultyRating {
+    Rating59,
+    Rating510,
+    Rating511,
+    Rating511plus,
+    Rating512,
+}
 
-impl Into<DifficultyRating> for usize {
-    fn into(self) -> DifficultyRating {
-        let rating = match self {
-            0 => 1,
-            1..=10 => self as u8,
-            _ => 10,
+impl Display for DifficultyRating {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let display_str = match self {
+            Self::Rating59 => "5.9",
+            Self::Rating510 => "5.10",
+            Self::Rating511 => "5.11",
+            Self::Rating511plus => "5.11+",
+            Self::Rating512 => "5.12",
         };
-        DifficultyRating(rating)
+        write!(f, "{}", display_str)
     }
 }
 
@@ -20,29 +31,26 @@ impl Into<DifficultyRating> for usize {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct GpsPosition(f64, f64);
 
-impl Into<GpsPosition> for (f64, f64) {
-    fn into(self) -> GpsPosition {
-        GpsPosition(self.0, self.1)
-    }
-}
-
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Route {
-    name: String,
-    difficulty: DifficultyRating,
-    location: GpsPosition,
+    pub name: String,
+    pub difficulty: DifficultyRating,
+    pub latitude: f64,
+    pub longitude: f64,
 }
 
 impl Route {
     pub fn new(
         name: String,
         difficulty: impl Into<DifficultyRating>,
-        location: impl Into<GpsPosition>,
+        latitude: f64,
+        longitude: f64,
     ) -> Self {
         Self {
             name,
             difficulty: difficulty.into(),
-            location: location.into(),
+            latitude,
+            longitude,
         }
     }
 }
@@ -52,7 +60,12 @@ mod tests {
     use super::*;
 
     fn test_route() -> Route {
-        Route::new("funky monkey".to_string(), 5, (123.45, 52.310))
+        Route::new(
+            "funky monkey".to_string(),
+            DifficultyRating::Rating59,
+            123.45,
+            52.310,
+        )
     }
 
     #[test]
@@ -62,8 +75,9 @@ mod tests {
             dummmy_route,
             Route {
                 name: "funky monkey".to_string(),
-                difficulty: DifficultyRating(5),
-                location: GpsPosition(123.45, 52.310),
+                difficulty: DifficultyRating::Rating59,
+                latitude: 123.45,
+                longitude: 52.310,
             }
         )
     }

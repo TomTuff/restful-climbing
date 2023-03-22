@@ -11,7 +11,8 @@
             </column>
             <column name="name" type="varchar(255)" />
             <column name="difficulty" type="varchar(10)" />
-            <column name="location" type="point" />
+            <column name="latitude" type="float8" />
+            <column name="longitude" type="float8" />
             <column name="times_climbed" type="integer" defaultValue="0" />
         </createTable>
 

@@ -28,10 +28,15 @@ mod tests {
         http::{self},
         test,
     };
-    use route::Route;
+    use route::{DifficultyRating, Route};
 
     fn test_route() -> Route {
-        Route::new("funky monkey".to_string(), 5, (123.45, 52.310))
+        Route::new(
+            "funky monkey".to_string(),
+            DifficultyRating::Rating59,
+            123.45,
+            52.310,
+        )
     }
 
     #[actix_web::test]
