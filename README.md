@@ -5,7 +5,7 @@ Toy REST API for getting information about different climbs and recording climbs
 ## API Endpoints
 - /routes
     - GET: List 50 most recently added routes
-    - POST: Add a new route
+    - ✔️ POST: Add a new route
 - /routes/{route_id}
     - GET: Find a route by its ID
     - DELETE: Delete a route

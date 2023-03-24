@@ -1,8 +1,8 @@
-use actix_web::{post, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpServer};
 
+pub mod error;
 pub mod pg;
 pub mod route;
-pub mod error;
 mod routes;
 
 // macro for generating the app so that we don't have redundant code in tests module and main()
@@ -58,4 +58,20 @@ mod tests {
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST)
     }
+
+    // #[actix_web::test]
+    // async fn populate_some_routes() {
+    //     let app = test::init_service(app!()).await;
+    //     let fake_names = vec!["funky monkey", "alluring alligator", "third bird", "fat cat", "flyin' lion", "swish fish", "free tree", "power flower", "sheet meat", "red lead"];
+    //     for fake_name in fake_names.iter() {
+    //         let mut route = test_route();
+    //         route.name = fake_name.to_string();
+    //         let req = test::TestRequest::post()
+    //             .uri("/routes")
+    //             .set_json(route)
+    //             .to_request();
+    //         let resp = test::call_service(&app, req).await;
+    //         assert_eq!(resp.status(), http::StatusCode::OK);
+    //     }
+    // }
 }

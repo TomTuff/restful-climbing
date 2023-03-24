@@ -14,6 +14,7 @@
             <column name="latitude" type="float8" />
             <column name="longitude" type="float8" />
             <column name="times_climbed" type="integer" defaultValue="0" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp" />
         </createTable>
 
         <createTable tableName="climbers">
@@ -21,6 +22,7 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="username" type="varchar(255)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp" />
         </createTable>
 
         <createTable tableName="climbs">
@@ -32,6 +34,7 @@
             <column name="completion_date" type="timestamp" />
             <column name="rating" type="integer" />
             <column name="review" type="varchar(1000)" />
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp" />
         </createTable>
         
         <addForeignKeyConstraint

@@ -1,8 +1,6 @@
-use std::fmt::Display;
-
-/// module for structs related to Route, mostly handled by the API endpoint /routes
 use serde::{Deserialize, Serialize};
-use sqlx::{Postgres, Type};
+/// module for structs related to Route, mostly handled by the API endpoint /routes
+use std::fmt::Display;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum DifficultyRating {
