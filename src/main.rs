@@ -2,6 +2,7 @@ use actix_web::{post, App, HttpResponse, HttpServer, Responder};
 
 pub mod pg;
 pub mod route;
+pub mod error;
 mod routes;
 
 // macro for generating the app so that we don't have redundant code in tests module and main()
