@@ -10,5 +10,5 @@ pub async fn conn() -> Result<postgres::PgConnection, DatabaseError> {
         .password(dotenv!("POSTGRES_PASSWORD"))
         .database(dotenv!("DATABASE_NAME"))
         .connect()
-        .await?) // TODO: Handle Err() on failure to connect
+        .await?)
 }

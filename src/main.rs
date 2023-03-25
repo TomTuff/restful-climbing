@@ -11,6 +11,7 @@ macro_rules! app (
     () => ({
         App::new()
             .service(routes::routes_post)
+            .service(routes::routes_get)
     });
 );
 
@@ -62,7 +63,7 @@ mod tests {
     // #[actix_web::test]
     // async fn populate_some_routes() {
     //     let app = test::init_service(app!()).await;
-    //     let fake_names = vec!["funky monkey", "alluring alligator", "third bird", "fat cat", "flyin' lion", "swish fish", "free tree", "power flower", "sheet meat", "red lead"];
+    //     let fake_names = vec!["alluring alligator", "third bird", "fat cat", "flyin' lion", "swish fish", "free tree", "power flower", "sheet meat", "red lead"];
     //     for fake_name in fake_names.iter() {
     //         let mut route = test_route();
     //         route.name = fake_name.to_string();
@@ -74,4 +75,13 @@ mod tests {
     //         assert_eq!(resp.status(), http::StatusCode::OK);
     //     }
     // }
+
+    #[actix_web::test]
+    async fn test_get_routes() {
+        let app = test::init_service(app!()).await;
+        let req = test::TestRequest::get().uri("/routes").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        println!("GET /routes response:\n{:?}", resp.into_body());
+    }
 }

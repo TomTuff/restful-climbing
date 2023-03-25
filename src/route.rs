@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 /// module for structs related to Route, mostly handled by the API endpoint /routes
 use std::fmt::Display;
+use std::str::FromStr;
+
+use crate::error::DatabaseError;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum DifficultyRating {
@@ -21,6 +24,21 @@ impl Display for DifficultyRating {
             Self::Rating512 => "5.12",
         };
         write!(f, "{}", display_str)
+    }
+}
+
+impl FromStr for DifficultyRating {
+    type Err = DatabaseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "5.9" => Ok(Self::Rating59),
+            "5.10" => Ok(Self::Rating510),
+            "5.11" => Ok(Self::Rating511),
+            "5.11+" => Ok(Self::Rating511plus),
+            "5.12" => Ok(Self::Rating512),
+            _ => Err(DatabaseError::FailedParseDifficultyRating),
+        }
     }
 }
 

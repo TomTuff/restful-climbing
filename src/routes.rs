@@ -1,15 +1,13 @@
-/// Functions for the API endpoint /routes
 use crate::pg::conn;
-use crate::route::Route;
-use actix_web::{post, web, HttpResponse, Responder};
+use crate::route::{DifficultyRating, Route};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use dotenvy::dotenv;
 use sqlx::{self, query};
+/// Functions for the API endpoint /routes
+use std::str::FromStr;
 
 #[post("/routes")]
 async fn routes_post(json: web::Json<Route>) -> impl Responder {
-    // println!("routes_post with route json = {:?}", json);
-    // let route = json.0;
-    // println!("route = {:?}", route);
     if let Ok(mut conn) = conn().await {
         dotenv().ok();
         if let Ok(_query_result) = query!(
@@ -28,5 +26,30 @@ async fn routes_post(json: web::Json<Route>) -> impl Responder {
         }
     } else {
         HttpResponse::BadGateway() // failed to connect to db
+    }
+}
+
+#[get("/routes")]
+async fn routes_get() -> impl Responder {
+    if let Ok(mut conn) = conn().await {
+        dotenv().ok();
+        if let Ok(query_result) = query!(r#"SELECT name as "name!", difficulty as "difficulty!", latitude as "latitude!", longitude as "longitude!" FROM routes ORDER BY created_at DESC LIMIT 5"#)
+        .fetch_all(&mut conn)
+        .await
+        {
+            let routes = query_result.iter().map(|record| {
+                Route::new(
+                    record.name.to_owned(),
+                    DifficultyRating::from_str(&record.difficulty).unwrap(),  // TODO eliminate unwrap()
+                    record.latitude,
+                    record.longitude,
+                )
+            }).collect::<Vec<Route>>();
+            HttpResponse::Ok().json(routes)
+        } else {
+            HttpResponse::BadGateway().finish() // established connection to DB but SELECT failed
+        }
+    } else {
+        HttpResponse::BadGateway().finish() // failed to connect to db
     }
 }
