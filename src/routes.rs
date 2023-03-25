@@ -40,7 +40,11 @@ async fn routes_get() -> impl Responder {
             let routes = query_result.iter().map(|record| {
                 Route::new(
                     record.name.to_owned(),
-                    DifficultyRating::from_str(&record.difficulty).unwrap(),  // TODO eliminate unwrap()
+                    DifficultyRating::from_str(&record.difficulty).unwrap(),  // ~~~TODO eliminate unwrap()~~~
+                                                                              // Actually, it won't really make a difference. The unwrap here is just as likely
+                                                                              // to panic as the `x as "x!"` sqlx type override; both rely on the application
+                                                                              // enforcing its schema when the records were added to db (i.e. no nulls for 
+                                                                              // the type overrides, no values that will cause unwrap() here to panic in difficulty)
                     record.latitude,
                     record.longitude,
                 )
