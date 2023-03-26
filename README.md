@@ -16,6 +16,7 @@ Toy REST API for getting information about different climbs and recording climbs
     - POST: Create a new climber
 - /climbers/{climber_id}
     - GET: Return 10 most recently completed climbs
+    - DELETE: Delete specified climber
 - /climbers/{climber_id}/{route_id}
     - GET: Get the climber's review of the given route
     - POST: Add a new review for the given climber/route

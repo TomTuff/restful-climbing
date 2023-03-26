@@ -5,7 +5,9 @@ use env_logger::Env;
 pub mod error;
 pub mod pg;
 pub mod route;
+pub mod climber;
 mod routes;
+mod climbers;
 
 // macro for generating the app so that we don't have redundant code in tests module and main()
 #[macro_export]
@@ -23,6 +25,17 @@ macro_rules! app (
                     .service(routes::delete_route_by_id)
                     .service(routes::update_route_by_id)
             )
+            .service(
+                web::scope("/climbers")
+                    .service(climbers::get_recent_climbers)
+                    .service(climbers::add_new_climber)
+                    .service(climbers::get_climber_recent_climbs)
+                    .service(climbers::delete_climber)
+                    .service(climbers::get_climbers_review_by_route_id)
+                    .service(climbers::add_review)
+                    .service(climbers::update_review)
+                    .service(climbers::delete_review)
+            )
     });
 );
 
@@ -36,7 +49,7 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::route::NumberRoutes;
+    use crate::{route::NumberRoutes, climber::{Climber, NumberClimbers}};
 
     use super::*;
     use actix_web::{
@@ -173,5 +186,60 @@ mod tests {
         assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Vec<Route> = test::read_body_json(resp).await;
         println!("GET /routes with number_routes = 2 response:\n{:?}", body);
+    }
+
+    #[actix_web::test]
+    async fn test_add_get_delete_climber() {
+        let app = test::init_service(app!()).await;
+
+        let test_climber = Climber { 
+            id: None,
+            username: "testclimber123".to_string(),
+        };
+
+        // Add climber
+        let req = test::TestRequest::post()
+            .uri("/climbers")
+            .set_json(test_climber)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Get climber
+        let one_climber = NumberClimbers { number_climbers: 1 };
+        let req = test::TestRequest::get()
+            .uri("/climbers")
+            .set_json(one_climber)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        let body: Vec<Climber> = test::read_body_json(resp).await;
+        assert_eq!(body.len(), 1);
+        let id = body[0].id.unwrap();
+        println!("returned id for test climber: {id}");
+
+        // Get climber by id
+        let req = test::TestRequest::get()
+            .uri(&format!("/climbers/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        let body: Route = test::read_body_json(resp).await;
+        println!("returned climbs for test climber:\n{:?}", body);
+
+        // Delete route
+        let req = test::TestRequest::delete()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Get route by id again to verify that the deletion worked
+        let req = test::TestRequest::get()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
+
     }
 }
