@@ -49,6 +49,7 @@ pub struct GpsPosition(f64, f64);
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Route {
+    pub id: Option<i32>,
     pub name: String,
     pub difficulty: DifficultyRating,
     pub latitude: f64,
@@ -57,12 +58,14 @@ pub struct Route {
 
 impl Route {
     pub fn new(
+        id: Option<i32>,
         name: String,
         difficulty: impl Into<DifficultyRating>,
         latitude: f64,
         longitude: f64,
     ) -> Self {
         Self {
+            id,
             name,
             difficulty: difficulty.into(),
             latitude,
@@ -71,12 +74,18 @@ impl Route {
     }
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct NumberRoutes {
+    pub number_routes: i64,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn test_route() -> Route {
         Route::new(
+            None,
             "funky monkey".to_string(),
             DifficultyRating::Rating59,
             123.45,
@@ -90,6 +99,7 @@ mod tests {
         assert_eq!(
             dummmy_route,
             Route {
+                id: None,
                 name: "funky monkey".to_string(),
                 difficulty: DifficultyRating::Rating59,
                 latitude: 123.45,

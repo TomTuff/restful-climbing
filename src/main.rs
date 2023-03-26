@@ -1,4 +1,4 @@
-use actix_web::{middleware::Logger, App, HttpServer};
+use actix_web::{web, middleware::Logger, App, HttpServer};
 use dotenvy::dotenv;
 use env_logger::Env;
 
@@ -15,8 +15,14 @@ macro_rules! app (
         let _ = env_logger::try_init_from_env(Env::default().default_filter_or("info"));  // assign to _ because Result<(), SetLoggerError> is intentionally unused; SetLoggerError indicates set_logger was already called, which is fine.
         App::new()
             .wrap(Logger::default())
-            .service(routes::routes_post)
-            .service(routes::routes_get)
+            .service(
+                web::scope("/routes")
+                    .service(routes::add_new_route)
+                    .service(routes::get_recent_routes)
+                    .service(routes::get_route_by_id)
+                    .service(routes::delete_route_by_id)
+                    .service(routes::update_route_by_id)
+            )
     });
 );
 
@@ -30,6 +36,8 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::route::NumberRoutes;
+
     use super::*;
     use actix_web::{
         http::{self},
@@ -39,6 +47,7 @@ mod tests {
 
     fn test_route() -> Route {
         Route::new(
+            None,
             "funky monkey".to_string(),
             DifficultyRating::Rating59,
             123.45,
@@ -47,14 +56,54 @@ mod tests {
     }
 
     #[actix_web::test]
-    async fn test_adding_route() {
+    async fn test_add_get_delete_route() {
         let app = test::init_service(app!()).await;
+
+        // Add route
         let req = test::TestRequest::post()
             .uri("/routes")
             .set_json(test_route())
             .to_request();
         let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), http::StatusCode::OK)
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Get route
+        let one_route = NumberRoutes{ number_routes: 1 };
+        let req = test::TestRequest::get()
+            .uri("/routes")
+            .set_json(one_route)  
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);        
+        let body: Vec<Route> = test::read_body_json(resp).await;
+        assert_eq!(body.len(), 1);
+        let id = body[0].id.unwrap();
+        println!("returned id for funky monkey: {id}");
+
+        // Get route by id
+        let req = test::TestRequest::get()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Update route by id
+        let mut updated_route = test_route();
+        updated_route.difficulty = DifficultyRating::Rating512;
+        let req = test::TestRequest::put()
+            .uri(&format!("/routes/{id}"))
+            .set_json(updated_route)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Delete route
+        let req = test::TestRequest::delete()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
     }
 
     #[actix_web::test]
@@ -85,6 +134,17 @@ mod tests {
     async fn test_get_routes() {
         let app = test::init_service(app!()).await;
         let req = test::TestRequest::get().uri("/routes").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        let body: Vec<Route> = test::read_body_json(resp).await;
+        println!("GET /routes response:\n{:?}", body);
+    }
+
+    #[actix_web::test]
+    async fn test_get_routes_with_specific_number() {
+        let app = test::init_service(app!()).await;
+        let num_routes = NumberRoutes { number_routes: 9999 };
+        let req = test::TestRequest::get().uri("/routes").set_json(num_routes).to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Vec<Route> = test::read_body_json(resp).await;

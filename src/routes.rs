@@ -1,14 +1,14 @@
 use crate::error::DatabaseError;
 use crate::pg::conn;
-use crate::route::{DifficultyRating, Route};
-use actix_web::{get, post, web, HttpResponse, Responder};
+use crate::route::{DifficultyRating, Route, NumberRoutes};
+use actix_web::{get, post, delete, put, web, HttpResponse, Responder};
 use log::error;
 use sqlx::{self, query};
 /// Functions for the API endpoint /routes
 use std::str::FromStr;
 
-#[post("/routes")]
-async fn routes_post(json: web::Json<Route>) -> impl Responder {
+#[post("")]
+async fn add_new_route(json: web::Json<Route>) -> impl Responder {
     if let Ok(mut conn) = conn().await {
         if let Ok(_query_result) = query!(
             "INSERT INTO routes (name, difficulty, latitude, longitude) VALUES ($1, $2, $3, $4)",
@@ -22,17 +22,26 @@ async fn routes_post(json: web::Json<Route>) -> impl Responder {
         {
             HttpResponse::Ok()
         } else {
-            HttpResponse::BadGateway() // established connection to DB but INSERT failed
+            error!("INSERT query failed in routes_post()");
+            HttpResponse::BadGateway() 
         }
     } else {
-        HttpResponse::BadGateway() // failed to connect to db
+        error!("Failed to connect to the database in routes_post()");
+        HttpResponse::BadGateway() 
     }
 }
 
-#[get("/routes")]
-async fn routes_get() -> impl Responder {
+#[get("")]
+async fn get_recent_routes(number_routes: Option<web::Json<NumberRoutes>>) -> impl Responder {
+    let number_of_routes_to_request = match number_routes {
+        Some(n) => { n.0.number_routes }
+        None => { 5 }
+    };
     if let Ok(mut conn) = conn().await {
-        if let Ok(query_result) = query!(r#"SELECT name as "name!", difficulty as "difficulty!", latitude as "latitude!", longitude as "longitude!" FROM routes ORDER BY created_at DESC LIMIT 5"#)
+        if let Ok(query_result) = query!(
+            r#"SELECT id, name as "name!", difficulty as "difficulty!", latitude as "latitude!", longitude as "longitude!" FROM routes ORDER BY created_at DESC LIMIT ($1)"#,
+            number_of_routes_to_request,
+        )
             .fetch_all(&mut conn)
             .await
         {
@@ -40,6 +49,7 @@ async fn routes_get() -> impl Responder {
                 .iter()
                 .map(|record| {
                     Ok(Route::new(
+                        Some(record.id),
                         record.name.to_owned(),
                         DifficultyRating::from_str(&record.difficulty)?,
                         record.latitude,
@@ -49,7 +59,7 @@ async fn routes_get() -> impl Responder {
                 .collect::<Result<Vec<Route>, DatabaseError>>() {
                     HttpResponse::Ok().json(routes)
             } else {
-                error!("failed to parse difficulty column to a DifficultyRating in routes_get()");
+                error!("Failed to parse difficulty column to a DifficultyRating in routes_get()");
                 HttpResponse::BadGateway().finish()
             }
         } else {
@@ -60,4 +70,19 @@ async fn routes_get() -> impl Responder {
         error!("Failed to connect to the database in routes_get()");
         HttpResponse::BadGateway().finish()
     }
+}
+
+#[get("/{id}")]
+async fn get_route_by_id() -> impl Responder {
+    HttpResponse::ExpectationFailed()
+}
+
+#[delete("/{id}")]
+async fn delete_route_by_id() -> impl Responder {
+    HttpResponse::ExpectationFailed()
+}
+
+#[put("/{id}")]
+async fn update_route_by_id() -> impl Responder {
+    HttpResponse::ExpectationFailed()
 }
