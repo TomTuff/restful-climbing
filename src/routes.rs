@@ -22,11 +22,11 @@ async fn add_new_route(json: web::Json<Route>) -> impl Responder {
         {
             HttpResponse::Ok()
         } else {
-            error!("INSERT query failed in routes_post()");
+            error!("INSERT query failed in add_new_route()");
             HttpResponse::BadGateway() 
         }
     } else {
-        error!("Failed to connect to the database in routes_post()");
+        error!("Failed to connect to the database in add_new_route()");
         HttpResponse::BadGateway() 
     }
 }
@@ -59,22 +59,51 @@ async fn get_recent_routes(number_routes: Option<web::Json<NumberRoutes>>) -> im
                 .collect::<Result<Vec<Route>, DatabaseError>>() {
                     HttpResponse::Ok().json(routes)
             } else {
-                error!("Failed to parse difficulty column to a DifficultyRating in routes_get()");
+                error!("Failed to parse difficulty column to a DifficultyRating in get_recent_routes()");
                 HttpResponse::BadGateway().finish()
             }
         } else {
-            error!("SELECT query failed in routes_get()");
+            error!("SELECT query failed in get_recent_routes()");
             HttpResponse::BadGateway().finish()
         }
     } else {
-        error!("Failed to connect to the database in routes_get()");
+        error!("Failed to connect to the database in get_recent_routes()");
         HttpResponse::BadGateway().finish()
     }
 }
 
 #[get("/{id}")]
-async fn get_route_by_id() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn get_route_by_id(path: web::Path<(i32)>) -> impl Responder {
+    let id = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if let Ok(query_result) = query!(
+            r#"SELECT id, name as "name!", difficulty as "difficulty!", latitude as "latitude!", longitude as "longitude!" FROM routes WHERE id = ($1)"#,
+            id,
+        )
+            .fetch_one(&mut conn)
+            .await
+        {
+            if let Ok(difficulty_rating) = DifficultyRating::from_str(&query_result.difficulty) {
+                let route = Route::new(
+                    Some(query_result.id),
+                    query_result.name.to_owned(),
+                    difficulty_rating,
+                    query_result.latitude,
+                    query_result.longitude,
+                );
+                HttpResponse::Ok().json(route)
+            } else {
+                error!("Failed to parse difficulty column to a DifficultyRating in get_route_by_id()");
+                HttpResponse::BadGateway().finish()
+            }
+        } else {
+            error!("SELECT query failed in get_route_by_id()");
+            HttpResponse::BadGateway().finish()
+        }
+    } else {
+        error!("Failed to connect to the database in get_route_by_id()");
+        HttpResponse::BadGateway().finish()
+    }
 }
 
 #[delete("/{id}")]

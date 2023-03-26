@@ -85,7 +85,9 @@ mod tests {
             .uri(&format!("/routes/{id}"))
             .to_request();
         let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), http::StatusCode::OK);
+        assert_eq!(resp.status(), http::StatusCode::OK);        
+        let body: Route = test::read_body_json(resp).await;
+        println!("returned Route for funky monkey:\n{:?}", body);
 
         // Update route by id
         let mut updated_route = test_route();
@@ -143,11 +145,11 @@ mod tests {
     #[actix_web::test]
     async fn test_get_routes_with_specific_number() {
         let app = test::init_service(app!()).await;
-        let num_routes = NumberRoutes { number_routes: 9999 };
+        let num_routes = NumberRoutes { number_routes: 2 };
         let req = test::TestRequest::get().uri("/routes").set_json(num_routes).to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Vec<Route> = test::read_body_json(resp).await;
-        println!("GET /routes response:\n{:?}", body);
+        println!("GET /routes with number_routes = 2 response:\n{:?}", body);
     }
 }
