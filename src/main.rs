@@ -1,4 +1,6 @@
-use actix_web::{App, HttpServer};
+use actix_web::{middleware::Logger, App, HttpServer};
+use dotenvy::dotenv;
+use env_logger::Env;
 
 pub mod error;
 pub mod pg;
@@ -9,7 +11,10 @@ mod routes;
 #[macro_export]
 macro_rules! app (
     () => ({
+        dotenv().ok();
+        let _ = env_logger::try_init_from_env(Env::default().default_filter_or("info"));  // assign to _ because Result<(), SetLoggerError> is intentionally unused; SetLoggerError indicates set_logger was already called, which is fine.
         App::new()
+            .wrap(Logger::default())
             .service(routes::routes_post)
             .service(routes::routes_get)
     });
@@ -82,6 +87,7 @@ mod tests {
         let req = test::TestRequest::get().uri("/routes").to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
-        println!("GET /routes response:\n{:?}", resp.into_body());
+        let body: Vec<Route> = test::read_body_json(resp).await;
+        println!("GET /routes response:\n{:?}", body);
     }
 }
