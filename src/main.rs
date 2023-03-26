@@ -1,4 +1,4 @@
-use actix_web::{web, middleware::Logger, App, HttpServer};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use dotenvy::dotenv;
 use env_logger::Env;
 
@@ -68,13 +68,13 @@ mod tests {
         assert_eq!(resp.status(), http::StatusCode::OK);
 
         // Get route
-        let one_route = NumberRoutes{ number_routes: 1 };
+        let one_route = NumberRoutes { number_routes: 1 };
         let req = test::TestRequest::get()
             .uri("/routes")
-            .set_json(one_route)  
+            .set_json(one_route)
             .to_request();
         let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), http::StatusCode::OK);        
+        assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Vec<Route> = test::read_body_json(resp).await;
         assert_eq!(body.len(), 1);
         let id = body[0].id.unwrap();
@@ -85,7 +85,7 @@ mod tests {
             .uri(&format!("/routes/{id}"))
             .to_request();
         let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), http::StatusCode::OK);        
+        assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Route = test::read_body_json(resp).await;
         println!("returned Route for funky monkey:\n{:?}", body);
 
@@ -105,7 +105,6 @@ mod tests {
             .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
-
     }
 
     #[actix_web::test]
@@ -146,7 +145,10 @@ mod tests {
     async fn test_get_routes_with_specific_number() {
         let app = test::init_service(app!()).await;
         let num_routes = NumberRoutes { number_routes: 2 };
-        let req = test::TestRequest::get().uri("/routes").set_json(num_routes).to_request();
+        let req = test::TestRequest::get()
+            .uri("/routes")
+            .set_json(num_routes)
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
         let body: Vec<Route> = test::read_body_json(resp).await;

@@ -1,7 +1,7 @@
 use crate::error::DatabaseError;
 use crate::pg::conn;
-use crate::route::{DifficultyRating, Route, NumberRoutes};
-use actix_web::{get, post, delete, put, web, HttpResponse, Responder};
+use crate::route::{DifficultyRating, NumberRoutes, Route};
+use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::error;
 use sqlx::{self, query};
 /// Functions for the API endpoint /routes
@@ -23,19 +23,19 @@ async fn add_new_route(json: web::Json<Route>) -> impl Responder {
             HttpResponse::Ok()
         } else {
             error!("INSERT query failed in add_new_route()");
-            HttpResponse::BadGateway() 
+            HttpResponse::BadGateway()
         }
     } else {
         error!("Failed to connect to the database in add_new_route()");
-        HttpResponse::BadGateway() 
+        HttpResponse::BadGateway()
     }
 }
 
 #[get("")]
 async fn get_recent_routes(number_routes: Option<web::Json<NumberRoutes>>) -> impl Responder {
     let number_of_routes_to_request = match number_routes {
-        Some(n) => { n.0.number_routes }
-        None => { 5 }
+        Some(n) => n.0.number_routes,
+        None => 5,
     };
     if let Ok(mut conn) = conn().await {
         if let Ok(query_result) = query!(
@@ -73,7 +73,7 @@ async fn get_recent_routes(number_routes: Option<web::Json<NumberRoutes>>) -> im
 }
 
 #[get("/{id}")]
-async fn get_route_by_id(path: web::Path<(i32)>) -> impl Responder {
+async fn get_route_by_id(path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();
     if let Ok(mut conn) = conn().await {
         if let Ok(query_result) = query!(
@@ -107,8 +107,23 @@ async fn get_route_by_id(path: web::Path<(i32)>) -> impl Responder {
 }
 
 #[delete("/{id}")]
-async fn delete_route_by_id() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn delete_route_by_id(path: web::Path<i32>) -> impl Responder {
+    let id = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if query!(r#"DELETE FROM routes WHERE id = ($1)"#, id,)
+            .execute(&mut conn)
+            .await
+            .is_ok()
+        {
+            HttpResponse::Ok()
+        } else {
+            error!("DELETE query failed in delete_route_by_id()");
+            HttpResponse::BadGateway()
+        }
+    } else {
+        error!("Failed to connect to the database in delete_route_by_id()");
+        HttpResponse::BadGateway()
+    }
 }
 
 #[put("/{id}")]
