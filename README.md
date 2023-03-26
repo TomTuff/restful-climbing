@@ -8,9 +8,9 @@ Toy REST API for getting information about different climbs and recording climbs
         - ✔️ Add optional arguments to query body to specify # routes
     - ✔️ POST: Add a new route
 - /routes/{route_id}
-    - GET: Find a route by its ID
-    - DELETE: Delete a route
-    - PUT: Update information about the climb
+    - ✔️ GET: Find a route by its ID
+    - ✔️ DELETE: Delete a route
+    - ✔️ PUT: Update information about the climb
 - /climbers
     - GET: Return 10 most recently added climbers
     - POST: Create a new climber

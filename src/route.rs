@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use crate::error::DatabaseError;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub enum DifficultyRating {
     Rating59,
     Rating510,

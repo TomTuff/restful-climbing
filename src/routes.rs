@@ -98,7 +98,7 @@ async fn get_route_by_id(path: web::Path<i32>) -> impl Responder {
             }
         } else {
             error!("SELECT query failed in get_route_by_id()");
-            HttpResponse::BadGateway().finish()
+            HttpResponse::BadRequest().finish()
         }
     } else {
         error!("Failed to connect to the database in get_route_by_id()");
@@ -127,6 +127,28 @@ async fn delete_route_by_id(path: web::Path<i32>) -> impl Responder {
 }
 
 #[put("/{id}")]
-async fn update_route_by_id() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn update_route_by_id(path: web::Path<i32>, json: web::Json<Route>) -> impl Responder {
+    let id = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if query!(
+            "UPDATE routes SET name = $1, difficulty = $2, latitude = $3, longitude = $4 WHERE id = ($5)",
+            json.0.name,
+            format!("{}", json.0.difficulty),
+            json.0.latitude,
+            json.0.longitude,
+            id,
+        )
+            .execute(&mut conn)
+            .await
+            .is_ok()
+        {
+            HttpResponse::Ok()
+        } else {
+            error!("UPDATE query failed in update_route_by_id()");
+            HttpResponse::BadGateway()
+        }
+    } else {
+        error!("Failed to connect to the database in update_route_by_id()");
+        HttpResponse::BadGateway()
+    }
 }

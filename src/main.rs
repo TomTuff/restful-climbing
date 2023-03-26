@@ -99,12 +99,32 @@ mod tests {
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
 
+        // Get route by id again to verify that the change worked
+        let req = test::TestRequest::get()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        let body: Route = test::read_body_json(resp).await;
+        println!(
+            "returned Route for funky monkey after updating:\n{:?}",
+            body
+        );
+        assert_eq!(body.difficulty, DifficultyRating::Rating512);
+
         // Delete route
         let req = test::TestRequest::delete()
             .uri(&format!("/routes/{id}"))
             .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
+
+        // Get route by id again to verify that the deletion worked
+        let req = test::TestRequest::get()
+            .uri(&format!("/routes/{id}"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
     }
 
     #[actix_web::test]
