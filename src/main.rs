@@ -2,12 +2,12 @@ use actix_web::{middleware::Logger, web, App, HttpServer};
 use dotenvy::dotenv;
 use env_logger::Env;
 
+pub mod climber;
+mod climbers;
 pub mod error;
 pub mod pg;
 pub mod route;
-pub mod climber;
 mod routes;
-mod climbers;
 
 // macro for generating the app so that we don't have redundant code in tests module and main()
 #[macro_export]
@@ -49,7 +49,10 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{route::NumberRoutes, climber::{Climber, NumberClimbers}};
+    use crate::{
+        climber::{Climber, NumberClimbers},
+        route::NumberRoutes,
+    };
 
     use super::*;
     use actix_web::{
@@ -192,7 +195,7 @@ mod tests {
     async fn test_add_get_delete_climber() {
         let app = test::init_service(app!()).await;
 
-        let test_climber = Climber { 
+        let test_climber = Climber {
             id: None,
             username: "testclimber123".to_string(),
         };
@@ -224,7 +227,7 @@ mod tests {
             .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::OK);
-        let body: Route = test::read_body_json(resp).await;
+        let body: Climber = test::read_body_json(resp).await;
         println!("returned climbs for test climber:\n{:?}", body);
 
         // Delete route
@@ -240,6 +243,5 @@ mod tests {
             .to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
-
     }
 }

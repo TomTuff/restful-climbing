@@ -59,21 +59,36 @@ async fn add_new_climber(json: web::Json<Climber>) -> impl Responder {
 }
 
 #[get("/{id}")]
-async fn get_climber_recent_climbs() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn get_climber_recent_climbs(path: web::Path<i32>) -> impl Responder {
+    let id = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if let Ok(query_result) = query!(
+            r#"SELECT id, username as "username!" FROM climbers WHERE id = ($1)"#,
+            id
+        )
+        .fetch_one(&mut conn)
+        .await
+        {
+            let climber = Climber::new(Some(query_result.id), query_result.username);
+            HttpResponse::Ok().json(climber)
+        } else {
+            error!("SELECT query failed in get_climber_recent_climbs()");
+            HttpResponse::BadRequest().finish()
+        }
+    } else {
+        error!("Failed to connect to the database in get_climber_recent_climbs()");
+        HttpResponse::BadGateway().finish()
+    }
 }
 
 #[delete("/{id}")]
 async fn delete_climber(path: web::Path<i32>) -> impl Responder {
     let id = path.into_inner();
     if let Ok(mut conn) = conn().await {
-        if query!(
-            r#"DELETE FROM climbers WHERE id = ($1)"#,
-            id,
-        )
-        .execute(&mut conn)
-        .await
-        .is_ok()
+        if query!(r#"DELETE FROM climbers WHERE id = ($1)"#, id,)
+            .execute(&mut conn)
+            .await
+            .is_ok()
         {
             HttpResponse::Ok()
         } else {
@@ -85,7 +100,6 @@ async fn delete_climber(path: web::Path<i32>) -> impl Responder {
         HttpResponse::BadGateway()
     }
 }
-
 
 #[get("/climbers/{climber_id}/{route_id}")]
 async fn get_climbers_review_by_route_id() -> impl Responder {

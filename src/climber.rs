@@ -6,6 +6,12 @@ pub struct Climber {
     pub username: String,
 }
 
+impl Climber {
+    pub fn new(id: Option<i32>, username: String) -> Self {
+        Self { id, username }
+    }
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct NumberClimbers {
     pub number_climbers: i64,
