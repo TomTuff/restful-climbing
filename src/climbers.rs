@@ -122,7 +122,7 @@ async fn get_climbers_review_by_route_id(path: web::Path<(i32, i32)>) -> impl Re
                     query_result.rating,
                     query_result.review,
                     query_result.completion_date,
-                )                
+                )
             };
             HttpResponse::Ok().json(climb)
         } else {
@@ -133,7 +133,6 @@ async fn get_climbers_review_by_route_id(path: web::Path<(i32, i32)>) -> impl Re
         error!("Failed to connect to the database in add_review()");
         HttpResponse::BadGateway().finish()
     }
-
 }
 
 #[post("/{climber_id}/{route_id}")]
@@ -195,13 +194,13 @@ async fn delete_review(path: web::Path<(i32, i32)>) -> impl Responder {
     let (climber_id, route_id) = path.into_inner();
     if let Ok(mut conn) = conn().await {
         if query!(
-            r#"DELETE FROM climbs WHERE climber_id = ($1) AND route_id = ($2)"#, 
+            r#"DELETE FROM climbs WHERE climber_id = ($1) AND route_id = ($2)"#,
             climber_id,
             route_id,
         )
-            .execute(&mut conn)
-            .await
-            .is_ok()
+        .execute(&mut conn)
+        .await
+        .is_ok()
         {
             HttpResponse::Ok()
         } else {
@@ -213,4 +212,3 @@ async fn delete_review(path: web::Path<(i32, i32)>) -> impl Responder {
         HttpResponse::BadGateway()
     }
 }
-

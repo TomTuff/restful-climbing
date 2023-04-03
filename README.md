@@ -18,15 +18,15 @@ Toy REST API for getting information about different climbs and recording climbs
     - ✔️ GET: Return 10 most recently completed climbs
     - ✔️ DELETE: Delete specified climber
 - /climbers/{climber_id}/{route_id}
-    - GET: Get the climber's review of the given route
+    - ✔️ GET: Get the climber's review of the given route
     - ✔️ POST: Add a new review for the given climber/route
-    - PUT: Update the review for the given climber/route
-    - DELETE: Delete the review of the given climber/route
+    - ✔️ PUT: Update the review for the given climber/route
+    - ✔️ DELETE: Delete the review of the given climber/route
 
 ## Notes
 ### General plan:
 - ✔️ [Make Amazon RDS PostgreSQL instance](https://aws.amazon.com/rds/postgresql/pricing/)
-- Write the API with:
+- ✔️ Write the API with:
     - [actix-web](https://actix.rs/docs/getting-started)
     - [sqlx](https://crates.io/crates/sqlx) with `runtime-tokio-rustls` feature flag
 - Containerize the application using docker
