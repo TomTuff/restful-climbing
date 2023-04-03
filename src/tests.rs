@@ -10,6 +10,7 @@ use actix_web::{
     test,
 };
 use chrono::NaiveDate;
+use serde::Serialize;
 
 fn test_route() -> Route {
     Route::new(
