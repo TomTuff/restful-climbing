@@ -181,16 +181,36 @@ async fn update_review(path: web::Path<(i32, i32)>, json: web::Json<Review>) -> 
         {
             HttpResponse::Ok().finish()
         } else {
-            error!("INSERT query failed in add_review()");
+            error!("INSERT query failed in update_review()");
             HttpResponse::BadRequest().finish()
         }
     } else {
-        error!("Failed to connect to the database in add_review()");
+        error!("Failed to connect to the database in update_review()");
         HttpResponse::BadGateway().finish()
     }
 }
 
 #[delete("/{climber_id}/{route_id}")]
-async fn delete_review() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn delete_review(path: web::Path<(i32, i32)>) -> impl Responder {
+    let (climber_id, route_id) = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if query!(
+            r#"DELETE FROM climbs WHERE climber_id = ($1) AND route_id = ($2)"#, 
+            climber_id,
+            route_id,
+        )
+            .execute(&mut conn)
+            .await
+            .is_ok()
+        {
+            HttpResponse::Ok()
+        } else {
+            error!("DELETE query failed in delete_review()");
+            HttpResponse::BadGateway()
+        }
+    } else {
+        error!("Failed to connect to the database in delete_review()");
+        HttpResponse::BadGateway()
+    }
 }
+
