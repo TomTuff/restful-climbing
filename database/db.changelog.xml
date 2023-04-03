@@ -58,4 +58,26 @@
         />
     </changeSet>
 
+    <changeSet id="change-climbs-completion-date" author="Tom">
+        <addColumn tableName="climbs">
+            <column name="completion_date_tmp" type="date"/>
+        </addColumn>
+        
+        <update tableName="climbs">
+            <column name="completion_date_tmp" valueComputed="to_date(to_char(completion_date, 'YYYY-MM-DD'), 'YYYY-MM-DD')" />
+        </update>
+
+        <dropColumn tableName="climbs" columnName="completion_date" />
+
+        <renameColumn oldColumnName="completion_date_tmp" newColumnName="completion_date" tableName="climbs"/>
+
+        <modifyDataType columnName="completion_date" newDataType="date" tableName="climbs"/>
+
+        <sql>
+            ALTER TABLE climbs
+            ALTER COLUMN completion_date SET DEFAULT (CURRENT_DATE AT TIME ZONE 'GMT-8')
+        </sql>
+    </changeSet>
+
+
 </databaseChangeLog>

@@ -1,3 +1,4 @@
+use crate::climb::Review;
 use crate::climber::{Climber, NumberClimbers};
 use crate::pg::conn;
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
@@ -101,22 +102,44 @@ async fn delete_climber(path: web::Path<i32>) -> impl Responder {
     }
 }
 
-#[get("/climbers/{climber_id}/{route_id}")]
+#[get("/{climber_id}/{route_id}")]
 async fn get_climbers_review_by_route_id() -> impl Responder {
     HttpResponse::ExpectationFailed()
 }
 
-#[post("/climbers/{climber_id}/{route_id}")]
-async fn add_review() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+#[post("/{climber_id}/{route_id}")]
+async fn add_review(path: web::Path<(i32, i32)>, json: web::Json<Review>) -> impl Responder {
+    let (climber_id, route_id) = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if query!(
+            r#"INSERT INTO climbs (climber_id, route_id, rating, review, completion_date) VALUES ($1, $2, $3, $4, $5)"#,
+            climber_id,
+            route_id,
+            json.0.rating.i32(),
+            json.0.review,
+            json.0.completion_date,
+        )
+        .execute(&mut conn)
+        .await
+        .is_ok()
+        {
+            HttpResponse::Ok().finish()
+        } else {
+            error!("INSERT query failed in add_review()");
+            HttpResponse::BadRequest().finish()
+        }
+    } else {
+        error!("Failed to connect to the database in add_review()");
+        HttpResponse::BadGateway().finish()
+    }
 }
 
-#[put("/climbers/{climber_id}/{route_id}")]
+#[put("/{climber_id}/{route_id}")]
 async fn update_review() -> impl Responder {
     HttpResponse::ExpectationFailed()
 }
 
-#[delete("/climbers/{climber_id}/{route_id}")]
+#[delete("/{climber_id}/{route_id}")]
 async fn delete_review() -> impl Responder {
     HttpResponse::ExpectationFailed()
 }

@@ -12,14 +12,14 @@ Toy REST API for getting information about different climbs and recording climbs
     - ✔️ DELETE: Delete a route
     - ✔️ PUT: Update information about the climb
 - /climbers
-    - GET: Return 10 most recently added climbers
-    - POST: Create a new climber
+    - ✔️ GET: Return 10 most recently added climbers
+    - ✔️ POST: Create a new climber
 - /climbers/{climber_id}
-    - GET: Return 10 most recently completed climbs
-    - DELETE: Delete specified climber
+    - ✔️ GET: Return 10 most recently completed climbs
+    - ✔️ DELETE: Delete specified climber
 - /climbers/{climber_id}/{route_id}
     - GET: Get the climber's review of the given route
-    - POST: Add a new review for the given climber/route
+    - ✔️ POST: Add a new review for the given climber/route
     - PUT: Update the review for the given climber/route
     - DELETE: Delete the review of the given climber/route
 
