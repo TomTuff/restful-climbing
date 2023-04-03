@@ -1,4 +1,4 @@
-use crate::climb::Review;
+use crate::climb::{Climb, Review};
 use crate::climber::{Climber, NumberClimbers};
 use crate::pg::conn;
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
@@ -103,8 +103,37 @@ async fn delete_climber(path: web::Path<i32>) -> impl Responder {
 }
 
 #[get("/{climber_id}/{route_id}")]
-async fn get_climbers_review_by_route_id() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn get_climbers_review_by_route_id(path: web::Path<(i32, i32)>) -> impl Responder {
+    let (climber_id, route_id) = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if let Ok(query_result) = query!(
+            r#"SELECT id, climber_id as "climber_id!", route_id as "route_id!", rating as "rating!", review as "review!", completion_date as "completion_date!" FROM climbs WHERE climber_id = ($1) and route_id = ($2)"#,
+            climber_id,
+            route_id,
+        )
+        .fetch_one(&mut conn)
+        .await
+        {
+            let climb = Climb {
+                id: Some(query_result.id),
+                climber_id: query_result.climber_id,
+                route_id: query_result.route_id,
+                review: Review::new(
+                    query_result.rating,
+                    query_result.review,
+                    query_result.completion_date,
+                )                
+            };
+            HttpResponse::Ok().json(climb)
+        } else {
+            error!("INSERT query failed in add_review()");
+            HttpResponse::BadRequest().finish()
+        }
+    } else {
+        error!("Failed to connect to the database in add_review()");
+        HttpResponse::BadGateway().finish()
+    }
+
 }
 
 #[post("/{climber_id}/{route_id}")]
@@ -135,8 +164,30 @@ async fn add_review(path: web::Path<(i32, i32)>, json: web::Json<Review>) -> imp
 }
 
 #[put("/{climber_id}/{route_id}")]
-async fn update_review() -> impl Responder {
-    HttpResponse::ExpectationFailed()
+async fn update_review(path: web::Path<(i32, i32)>, json: web::Json<Review>) -> impl Responder {
+    let (climber_id, route_id) = path.into_inner();
+    if let Ok(mut conn) = conn().await {
+        if query!(
+            r#"UPDATE climbs SET rating = $1, review = $2, completion_date = $3 WHERE climber_id = ($4) AND route_id = ($5)"#,
+            json.0.rating.i32(),
+            json.0.review,
+            json.0.completion_date,
+            climber_id,
+            route_id,
+        )
+        .execute(&mut conn)
+        .await
+        .is_ok()
+        {
+            HttpResponse::Ok().finish()
+        } else {
+            error!("INSERT query failed in add_review()");
+            HttpResponse::BadRequest().finish()
+        }
+    } else {
+        error!("Failed to connect to the database in add_review()");
+        HttpResponse::BadGateway().finish()
+    }
 }
 
 #[delete("/{climber_id}/{route_id}")]

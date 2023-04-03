@@ -6,7 +6,6 @@ pub struct Climb {
     pub id: Option<i32>,
     pub climber_id: i32,
     pub route_id: i32,
-    pub completion_date: NaiveDate,
     #[serde(flatten)]
     pub review: Review,
 }

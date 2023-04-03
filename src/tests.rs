@@ -266,6 +266,7 @@ async fn test_post_get_put_delete_climb() {
     let resp = test::call_service(&app, req).await;
     assert_eq!(resp.status(), http::StatusCode::OK);
     let body: Climb = test::read_body_json(resp).await;
+    println!("got back climb:\n{:?}", body);
     assert_eq!(body.climber_id, climber_id);
     assert_eq!(body.route_id, route_id);
     let climb_id = body.id.unwrap();
